@@ -42,22 +42,24 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#120b3d;font-fam
 #cap{position:absolute;left:44px;right:44px;bottom:170px;text-align:center;background:rgba(10,6,40,.8);border-radius:34px;padding:26px 30px;font:800 62px/1.22 'DM Sans'}
 #cap span{display:inline-block;margin:0 8px}#cap span.k{color:#19E0D1}#cap span.r{color:#ff5a64}
 #logo{position:absolute;left:36px;bottom:36px;width:190px;background:#fff;border-radius:18px;padding:10px 16px}
-#ia{position:absolute;right:36px;bottom:44px;font:700 24px 'DM Sans';padding:10px 16px;border-radius:14px;background:rgba(0,0,0,.4)}
 #serie{position:absolute;left:0;right:0;top:60px;text-align:center;font:700 34px 'DM Sans';letter-spacing:5px;color:#7ff3ea}
 #bar{position:absolute;left:0;top:0;height:10px;background:linear-gradient(90deg,#19E0D1,#7b5cff)}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 .outlogo{left:240px;top:300px;width:600px;background:#fff;border-radius:40px;padding:30px 40px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
 .small{left:80px;right:80px;text-align:center;font:600 36px/1.35 'DM Sans';color:#cfe0ff}
+.verif{display:inline-block;background:rgba(25,224,209,.15);border:3px solid #19E0D1;color:#fff;border-radius:22px;padding:14px 24px;font:700 36px/1.3 'DM Sans';margin-bottom:16px}
+#glow{position:absolute;left:0;top:0;width:300px;height:90px;border-radius:50%;background:radial-gradient(closest-side,rgba(25,224,209,.85),rgba(25,224,209,0));filter:blur(6px)}
+.trail{position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:radial-gradient(closest-side,#7ff3ea,rgba(123,92,255,0))}
 </style></head><body>
 <div id="cam">
   <div id="bg"><div class="blob" id="bl1" style="width:900px;height:900px;background:#4b2fd0"></div><div class="blob" id="bl2" style="width:800px;height:800px;background:#0aa6c9"></div><div class="blob" id="bl3" style="width:600px;height:600px;background:#7b2fd0"></div></div>
   <div id="grid"></div><div id="dots"></div>
   <div id="scenes"></div>
-  <img id="robot" src="robot-sid.png">
+  <div id="trails"></div><div id="glow"></div><img id="robot" src="robot-sid.png">
   <div id="say"></div>
   <div id="cap"></div>
 </div>
-<div id="serie"></div><img id="logo" src="sid-logo.png"><div id="ia">Hecho con IA · Ejemplo ficticio</div><div id="bar"></div><div id="flash"></div>
+<div id="serie"></div><img id="logo" src="sid-logo.png"><div id="bar"></div><div id="flash"></div>
 <script>
 // ============================ CONFIG: lo único que cambia en cada video ============================
 const CONFIG = {
@@ -74,7 +76,7 @@ const CONFIG = {
     {tipo:"pasos", t:[18.6,25.6], titulo:"Qué hacer",
       pasos:[["Nunca compartas un código que te llegó",""],["Activá la verificación en dos pasos","Ajustes → Cuenta → Verificación en dos pasos"],["¿Te piden plata? Llamá vos al número de tu agenda",""]], robot:"¡Así te cuidás!"},
     {tipo:"cierre", t:[25.6,30], titulo:"Que no te hagan<br><em>el cuento</em>", linea:"Compartilo con tu familia 💙",
-      fuente:"Fuentes: argentina.gob.ar · Con vos en la web, y BCRA", firma:"Una serie de SID · app antiestafas en desarrollo", robot:""}
+      fuente:"✔ SID lo comprobó en fuentes oficiales: argentina.gob.ar y BCRA", firma:"Una serie de SID · app antiestafas en desarrollo", robot:""}
   ],
   // Subtítulos: [inicio, fin, texto]. *palabra* = turquesa, _palabra_ = rojo.
   subtitulos: [
@@ -112,7 +114,7 @@ CONFIG.escenas.forEach((s,i)=>{const d=document.createElement('div');d.className
   if(s.tipo==='revelacion'){h=`<div class="abs big" data-a="t" style="top:300px">${s.titulo}</div>`}
   if(s.tipo==='consecuencia'){h=`<div class="abs mid" data-a="t" style="top:170px">${s.titulo}</div>`+s.chats.map((c,k)=>`<div class="chat" data-a="c${k}" style="top:${470+k*250}px"><div class="ava" style="background:${c[1]}">${c[0]}</div><div><b>${c[2]}</b><p>${c[3]}</p></div><div class="stamp" data-a="st${k}">${s.sello}</div></div>`).join('')}
   if(s.tipo==='pasos'){h=`<div class="abs mid" data-a="t" style="top:150px">${s.titulo}</div>`+s.pasos.map((p,k)=>`<div class="step" data-a="p${k}" style="top:${330+k*290}px"><div class="num">${k+1}</div><div><p>${p[0]}</p>${p[1]?`<small>${p[1]}</small>`:''}</div></div>`).join('')}
-  if(s.tipo==='cierre'){h=`<img class="abs outlogo" data-a="lg" src="sid-logo.png"><div class="abs big" data-a="t" style="top:680px">${s.titulo}</div><div class="abs small" data-a="l" style="top:980px;font:800 52px 'DM Sans';color:#fff">${s.linea}</div><div class="abs small" data-a="f" style="top:1080px">${s.fuente}<br>${s.firma}</div>`}
+  if(s.tipo==='cierre'){h=`<img class="abs outlogo" data-a="lg" src="sid-logo.png"><div class="abs big" data-a="t" style="top:680px">${s.titulo}</div><div class="abs small" data-a="l" style="top:980px;font:800 52px 'DM Sans';color:#fff">${s.linea}</div><div class="abs small" data-a="f" style="top:1080px"><span class="verif">${s.fuente}</span><br>${s.firma}</div>`}
   d.innerHTML=h;S.appendChild(d)});
 const A=(i,k)=>document.querySelector(`#s${i} [data-a="${k}"]`);
 // subtítulos: palabras
@@ -121,6 +123,27 @@ let capIdx=-1;
 // robot: dónde está en cada escena [x, y, ancho, rotación]
 const ROBOT={gancho:[240,1000,640,-6],chat:[700,1260,400,8],revelacion:[60,1080,520,-10],consecuencia:[790,1130,280,6],pasos:[780,1170,290,-4],cierre:[380,1300,320,0]};
 const SAYPOS={gancho:[80,880],chat:[560,1150],revelacion:[460,1060],consecuencia:[0,0],pasos:[440,1090],cierre:[0,0]};
+(()=>{let h='';for(let k=0;k<8;k++)h+='<div class="trail"></div>';$('trails').innerHTML=h})();
+// Entradas: desde dónde llega volando, cuántos grados gira y cuánto se curva el vuelo
+const ENTRADA={gancho:{de:[240,-800],giro:360,arco:0,d:.8},chat:{de:[1400,700],giro:-40,arco:-200,d:.6},revelacion:{de:[-800,1800],giro:360,arco:-700,d:.9},
+  consecuencia:{de:[790,2200],giro:0,arco:0,d:.5},pasos:{de:[1400,200],giro:-360,arco:200,d:.8},cierre:{de:[380,2300],giro:720,arco:-300,d:1.0}};
+function robotPose(t){
+  t=Math.max(0,t);let cur=0;CONFIG.escenas.forEach((s,i)=>{if(t>=s.t[0])cur=i});const sc=CONFIG.escenas[cur],a=sc.t[0],ts=t-a;
+  const [rx,ry,rw,rr]=ROBOT[sc.tipo],E=ENTRADA[sc.tipo];
+  const p=eo(ts/E.d);let x=E.de[0]+(rx-E.de[0])*p, y=E.de[1]+(ry-E.de[1])*p+E.arco*Math.sin(Math.PI*p), r=rr+E.giro*(1-p);
+  // al aterrizar, se aplasta y rebota
+  const land=ts-E.d; let sx=1,sy=1; if(land>0){const k=Math.exp(-land*7)*Math.sin(land*22)*.18;sx=1+k;sy=1-k}
+  // flota, se balancea y cada tanto da un saltito
+  y+=Math.sin(t*3.2)*14; r+=Math.sin(t*2.1)*5;
+  const hop=(t%2.6);if(land>.3&&hop<.45){y-=Math.sin(Math.PI*hop/.45)*60}
+  // en los pasos da una vuelta con cada paso nuevo
+  if(sc.tipo==='pasos'&&sc.pasos){sc.pasos.forEach((q,k)=>{const t0=a+.5+k*2.1;if(t>=t0&&t<t0+.5)r+=360*eo((t-t0)/.5)})}
+  // en el cierre vuela en un ocho
+  if(sc.tipo==='cierre'&&land>0){x+=Math.sin(land*2.2)*120;y+=Math.sin(land*4.4)*40}
+  // en la revelación, cuando cae el título, da un salto grande
+  if(sc.tipo==='revelacion'&&ts>1.4&&ts<2.0){y-=Math.sin(Math.PI*(ts-1.4)/.6)*160;r+=360*eo((ts-1.4)/.6)}
+  return {x,y,r,w:rw,sx,sy};
+}
 function render(t){
   const T=CONFIG.duracion;
   // fondo vivo
@@ -154,12 +177,13 @@ function render(t){
   if(sc.tipo==='consecuencia'){slideUp(A(i,'t'),t,a,.35,-80);sc.chats.forEach((c,k)=>{pop(A(i,'c'+k),t,a+.6+k*1.0,.3,.7);slam(A(i,'st'+k),t,a+1.0+k*1.0)})}
   if(sc.tipo==='pasos'){slideUp(A(i,'t'),t,a,.35,-80);sc.pasos.forEach((p,k)=>{const e=A(i,'p'+k),t0=a+.5+k*2.1,pp=back((t-t0)/.4);e.style.opacity=t<t0?0:1;e.style.transform=`translateX(${(1-pp)*1100}px)`})}
   if(sc.tipo==='cierre'){pop(A(i,'lg'),t,a+.05,.5,.3);pop(A(i,'t'),t,a+.5,.4,.5);slideUp(A(i,'l'),t,a+1.0);slideUp(A(i,'f'),t,a+1.5)}
-  // robot
-  const [rx,ry,rw,rr]=ROBOT[sc.tipo];const ent=back((t-a)/.45);
-  const bob=Math.sin(t*3.2)*14, sway=Math.sin(t*2.1)*4;
-  const sq=1+.08*Math.sin(t*6.4)*(sc.tipo==='gancho'?1:.4);
-  $('robot').style.width=rw+'px';
-  $('robot').style.transform=`translate(${rx}px,${ry+bob+(1-ent)*600}px) rotate(${rr+sway}deg) scale(${sq},${2-sq})`;
+  // robot: vuela, gira y salta
+  const pose=robotPose(t);
+  $('robot').style.width=pose.w+'px';
+  $('robot').style.transform=`translate(${pose.x}px,${pose.y}px) rotate(${pose.r}deg) scale(${pose.sx},${pose.sy})`;
+  const g=$('glow');g.style.width=(pose.w*.6)+'px';g.style.transform=`translate(${pose.x+pose.w*.2}px,${pose.y+pose.w*.92}px) scale(${.8+.2*Math.sin(t*9)})`;g.style.opacity=.55+.25*Math.sin(t*7);
+  const tr=document.querySelectorAll('.trail');let v=0;{const q=robotPose(t-.05);v=Math.hypot(pose.x-q.x,pose.y-q.y)}
+  tr.forEach((d,k)=>{const q=robotPose(t-(k+1)*.035);d.style.transform=`translate(${q.x+q.w*.45}px,${q.y+q.w*.5}px) scale(${1.6-k*.12})`;d.style.opacity=v>12?(.7-k*.08):0});
   // cartel del robot
   const say=$('say');if(sc.robot){say.textContent=sc.robot;const [qx,qy]=SAYPOS[sc.tipo];say.style.left=qx+'px';say.style.top=qy+'px';say.style.opacity=t<a+.35?0:1;say.style.transform=`scale(${elastic((t-a-.35)/.6)}) rotate(${Math.sin(t*3)*2}deg)`}else say.style.opacity=0;
   // subtítulos palabra por palabra
