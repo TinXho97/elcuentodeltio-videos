@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<!--
+  MOTOR DE VIDEO · SID · El Cuento del Tío  (v2, 21/11/2026)
+  - Para un video nuevo, cambiá SOLO el objeto CONFIG (textos y tiempos). El resto es el motor.
+  - render(t) dibuja el cuadro del segundo t. motor.py lo filma escena por escena.
+  - Necesita robot-sid.png y sid-logo.png en la misma carpeta (repo TinXho97/elcuentodeltio-videos, assets/).
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#120b3d;font-family:'DM Sans',sans-serif;color:#fff}
+#cam{position:absolute;inset:0;transform-origin:540px 900px}
+#bg{position:absolute;inset:-200px;background:#1a1150}
+.blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.75}
+#grid{position:absolute;inset:-120px;background-image:linear-gradient(rgba(255,255,255,.055) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.055) 2px,transparent 2px);background-size:60px 60px}
+.dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#19E0D1;opacity:.5}
+.scene{position:absolute;inset:0;display:none}
+.abs{position:absolute}
+.big{font:400 132px/0.98 'Anton';text-transform:uppercase;text-align:center;left:50px;right:50px}
+.big em{font-style:normal;color:#19E0D1}.big b{font-weight:400;color:#ff5a64}
+.mid{font:400 96px/1.02 'Anton';text-transform:uppercase;text-align:center;left:50px;right:50px}
+.mid em{font-style:normal;color:#19E0D1}.mid b{font-weight:400;color:#ff5a64}
+.phone{left:110px;top:430px;width:860px;height:900px;background:#f3f5fb;border-radius:64px;border:16px solid #0b0726;box-shadow:0 40px 100px rgba(0,0,0,.55);overflow:hidden;color:#1b1840}
+.phead{height:130px;background:#e4e7f2;display:flex;align-items:center;gap:24px;padding:0 40px;font:700 38px 'DM Sans'}
+.ava{width:80px;height:80px;border-radius:50%;background:#9aa3bf;display:flex;align-items:center;justify-content:center;font:700 44px 'DM Sans';color:#fff;flex:none}
+.phead span{display:block;font:500 26px 'DM Sans';color:#6b7390}
+.bub{position:absolute;left:40px;max-width:700px;background:#fff;border-radius:10px 36px 36px 36px;padding:28px 34px;font:600 44px/1.25 'DM Sans';box-shadow:0 6px 18px rgba(20,10,80,.12)}
+.typing{position:absolute;left:40px;background:#fff;border-radius:10px 36px 36px 36px;padding:26px 34px;display:flex;gap:12px}
+.typing i{width:18px;height:18px;border-radius:50%;background:#9aa3bf;display:block}
+.danger{white-space:nowrap;padding:0 14px;border-radius:14px;font-weight:800;letter-spacing:4px}
+.ring{position:absolute;border:12px solid #ff3b47;border-radius:999px;box-shadow:0 0 40px rgba(255,59,71,.6)}
+.chat{position:absolute;left:90px;width:900px;background:#fff;color:#1b1840;border-radius:30px;padding:26px 30px;display:flex;gap:24px;align-items:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.chat b{display:block;font:700 32px 'DM Sans'}.chat p{font:500 36px/1.25 'DM Sans';color:#333}
+.stamp{position:absolute;right:-10px;top:-26px;background:#ff3b47;color:#fff;font:400 40px 'Anton';padding:6px 20px;border-radius:14px;border:4px solid #fff;letter-spacing:1px}
+.step{position:absolute;left:70px;right:70px;background:#fff;color:#16104a;border-radius:34px;padding:34px 36px;display:flex;gap:28px;align-items:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.num{flex:none;width:96px;height:96px;border-radius:50%;background:#19E0D1;color:#140c45;font:400 60px 'Anton';display:flex;align-items:center;justify-content:center}
+.step p{font:700 44px/1.22 'DM Sans'}
+.step small{display:inline-block;margin-top:10px;font:700 30px 'DM Sans';background:#16104a;color:#19E0D1;padding:4px 14px;border-radius:12px}
+#robot{position:absolute;left:0;top:0;width:600px;transform-origin:50% 60%;filter:drop-shadow(0 30px 50px rgba(0,0,0,.5))}
+#say{position:absolute;left:0;top:0;background:#19E0D1;color:#140c45;font:400 72px/1 'Anton';padding:22px 36px;border-radius:34px;text-transform:uppercase;white-space:nowrap;transform-origin:50% 100%}
+#say:after{content:'';position:absolute;bottom:-26px;left:60%;border:18px solid transparent;border-top:28px solid #19E0D1}
+#cap{position:absolute;left:44px;right:44px;bottom:170px;text-align:center;background:rgba(10,6,40,.8);border-radius:34px;padding:26px 30px;font:800 62px/1.22 'DM Sans'}
+#cap span{display:inline-block;margin:0 8px}#cap span.k{color:#19E0D1}#cap span.r{color:#ff5a64}
+#logo{position:absolute;left:36px;bottom:36px;width:190px;background:#fff;border-radius:18px;padding:10px 16px}
+#ia{position:absolute;right:36px;bottom:44px;font:700 24px 'DM Sans';padding:10px 16px;border-radius:14px;background:rgba(0,0,0,.4)}
+#serie{position:absolute;left:0;right:0;top:60px;text-align:center;font:700 34px 'DM Sans';letter-spacing:5px;color:#7ff3ea}
+#bar{position:absolute;left:0;top:0;height:10px;background:linear-gradient(90deg,#19E0D1,#7b5cff)}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.outlogo{left:240px;top:300px;width:600px;background:#fff;border-radius:40px;padding:30px 40px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.small{left:80px;right:80px;text-align:center;font:600 36px/1.35 'DM Sans';color:#cfe0ff}
+</style></head><body>
+<div id="cam">
+  <div id="bg"><div class="blob" id="bl1" style="width:900px;height:900px;background:#4b2fd0"></div><div class="blob" id="bl2" style="width:800px;height:800px;background:#0aa6c9"></div><div class="blob" id="bl3" style="width:600px;height:600px;background:#7b2fd0"></div></div>
+  <div id="grid"></div><div id="dots"></div>
+  <div id="scenes"></div>
+  <img id="robot" src="robot-sid.png">
+  <div id="say"></div>
+  <div id="cap"></div>
+</div>
+<div id="serie"></div><img id="logo" src="sid-logo.png"><div id="ia">Hecho con IA · Ejemplo ficticio</div><div id="bar"></div><div id="flash"></div>
+<script>
+// ============================ CONFIG: lo único que cambia en cada video ============================
+const CONFIG = {
+  serie: "EL CUENTO DEL TÍO",
+  duracion: 30,
+  // Escenas: [inicio, fin]. Los tipos posibles: gancho, chat, revelacion, consecuencia, pasos, cierre.
+  escenas: [
+    {tipo:"gancho", t:[0,3.4], titulo:"¡Pará!<br>¿Te pidieron<br><em>un código?</em>", robot:"¡Ojo acá!"},
+    {tipo:"chat", t:[3.4,8.4], contacto:"Número desconocido", estado:"en línea",
+      mensajes:["Hola! 😅 Te mandé un código por error", "¿Me lo pasás? Es este: <span class='danger' id='danger'>123-456</span>"], robot:"Mmm… 🤨"},
+    {tipo:"revelacion", t:[8.4,12.6], titulo:"Ese código es<br><em>la llave</em> de<br>tu WhatsApp 🔑", robot:"¡Es un cuento!"},
+    {tipo:"consecuencia", t:[12.6,18.6], titulo:"<b>Si lo pasás,</b> le escriben<br>a tu familia", sello:"NO SOS VOS",
+      chats:[["M","#e58a4d","Mamá","«Ma, cambié de número. ¿Me transferís? Es urgente»"],["T","#5d9b5a","Tía","«Tía, te pido un favor, hoy te lo devuelvo»"],["A","#6a7fd1","Abuelo","«Abu, necesito plata ya, no le digas a nadie»"]], robot:""},
+    {tipo:"pasos", t:[18.6,25.6], titulo:"Qué hacer",
+      pasos:[["Nunca compartas un código que te llegó",""],["Activá la verificación en dos pasos","Ajustes → Cuenta → Verificación en dos pasos"],["¿Te piden plata? Llamá vos al número de tu agenda",""]], robot:"¡Así te cuidás!"},
+    {tipo:"cierre", t:[25.6,30], titulo:"Que no te hagan<br><em>el cuento</em>", linea:"Compartilo con tu familia 💙",
+      fuente:"Fuentes: argentina.gob.ar · Con vos en la web, y BCRA", firma:"Una serie de SID · app antiestafas en desarrollo", robot:""}
+  ],
+  // Subtítulos: [inicio, fin, texto]. *palabra* = turquesa, _palabra_ = rojo.
+  subtitulos: [
+    [0.4,3.3,"¿Te llegó *este* mensaje?"],
+    [3.6,6.0,"Alguien te manda un *código*…"],
+    [6.0,8.3,"y te pide que se lo _pases_"],
+    [8.6,12.5,"Con ese código te _roban_ la cuenta"],
+    [12.8,18.5,"y le piden *plata* a tu familia haciéndose pasar por vos"],
+    [18.8,25.5,"*Cortá*, no pases nada y *llamá vos*"],
+  ],
+  // Efectos de cámara: zoom de golpe y temblor (segundo, fuerza)
+  zooms: [[0.15,0.10],[3.2,0.06],[5.2,0.05],[8.45,0.14],[12.65,0.08],[13.5,0.04],[14.5,0.04],[15.5,0.04],[18.65,0.06],[25.65,0.10]],
+  temblores: [[3.2,16],[8.45,22],[13.6,10],[14.6,10],[15.6,10]],
+};
+// ================================== MOTOR (no hace falta tocarlo) ==================================
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const eo=x=>1-Math.pow(1-cl(x),3);
+const back=x=>{x=cl(x);const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const elastic=x=>{x=cl(x);if(x===0||x===1)return x;return Math.pow(2,-10*x)*Math.sin((x*10-0.75)*2.0944)+1};
+function pop(e,t,t0,d=.35,from=.4){const p=back((t-t0)/d);e.style.opacity=t<t0?0:cl((t-t0)/(d*.5));e.style.transform=`scale(${from+(1-from)*p})`;}
+function slideUp(e,t,t0,d=.4,dy=120){const p=back((t-t0)/d);e.style.opacity=t<t0?0:cl((t-t0)/(d*.5));e.style.transform=`translateY(${(1-p)*dy}px)`;}
+function slam(e,t,t0){const p=cl((t-t0)/.18);e.style.opacity=t<t0?0:1;e.style.transform=`rotate(-8deg) scale(${t<t0?2.5:2.5-1.5*eo(p)})`;}
+$('serie').textContent=CONFIG.serie;
+// fondo
+(()=>{let h='';for(let i=0;i<22;i++){h+=`<div class="dot" data-i="${i}" style="left:${(i*197)%1080}px;top:${(i*331)%1920}px;transform:scale(${.6+(i%4)*.3})"></div>`}$('dots').innerHTML=h})();
+// construir escenas
+const S=$('scenes');
+CONFIG.escenas.forEach((s,i)=>{const d=document.createElement('div');d.className='scene';d.id='s'+i;let h='';
+  if(s.tipo==='gancho'){h=`<div class="abs big" data-a="t" style="top:240px">${s.titulo}</div>`}
+  if(s.tipo==='chat'){h=`<div class="abs phone" data-a="phone"><div class="phead"><div class="ava">?</div><div>${s.contacto}<span>${s.estado}</span></div></div>
+     <div class="typing" data-a="typ" style="top:180px"><i></i><i></i><i></i></div>
+     ${s.mensajes.map((m,k)=>`<div class="bub" data-a="m${k}" style="top:${180+k*200}px">${m}</div>`).join('')}
+     <div class="ring" data-a="ring"></div></div>`}
+  if(s.tipo==='revelacion'){h=`<div class="abs big" data-a="t" style="top:300px">${s.titulo}</div>`}
+  if(s.tipo==='consecuencia'){h=`<div class="abs mid" data-a="t" style="top:170px">${s.titulo}</div>`+s.chats.map((c,k)=>`<div class="chat" data-a="c${k}" style="top:${470+k*250}px"><div class="ava" style="background:${c[1]}">${c[0]}</div><div><b>${c[2]}</b><p>${c[3]}</p></div><div class="stamp" data-a="st${k}">${s.sello}</div></div>`).join('')}
+  if(s.tipo==='pasos'){h=`<div class="abs mid" data-a="t" style="top:150px">${s.titulo}</div>`+s.pasos.map((p,k)=>`<div class="step" data-a="p${k}" style="top:${330+k*290}px"><div class="num">${k+1}</div><div><p>${p[0]}</p>${p[1]?`<small>${p[1]}</small>`:''}</div></div>`).join('')}
+  if(s.tipo==='cierre'){h=`<img class="abs outlogo" data-a="lg" src="sid-logo.png"><div class="abs big" data-a="t" style="top:680px">${s.titulo}</div><div class="abs small" data-a="l" style="top:980px;font:800 52px 'DM Sans';color:#fff">${s.linea}</div><div class="abs small" data-a="f" style="top:1080px">${s.fuente}<br>${s.firma}</div>`}
+  d.innerHTML=h;S.appendChild(d)});
+const A=(i,k)=>document.querySelector(`#s${i} [data-a="${k}"]`);
+// subtítulos: palabras
+function capHTML(txt){let mode='';return txt.split(' ').map(w=>{let c=mode;if(w.startsWith('*')){c='k';mode='k'}if(w.startsWith('_')){c='r';mode='r'}if(/\*[.,!?…]*$/.test(w)&&mode==='k'){mode=''}if(/_[.,!?…]*$/.test(w)&&mode==='r'){mode=''}w=w.replace(/[*_]/g,'');return `<span class="${c}">${w}</span>`}).join('')}
+let capIdx=-1;
+// robot: dónde está en cada escena [x, y, ancho, rotación]
+const ROBOT={gancho:[240,1000,640,-6],chat:[700,1260,400,8],revelacion:[60,1080,520,-10],consecuencia:[790,1130,280,6],pasos:[780,1170,290,-4],cierre:[380,1300,320,0]};
+const SAYPOS={gancho:[80,880],chat:[560,1150],revelacion:[460,1060],consecuencia:[0,0],pasos:[440,1090],cierre:[0,0]};
+function render(t){
+  const T=CONFIG.duracion;
+  // fondo vivo
+  $('bl1').style.transform=`translate(${500+Math.sin(t*.4)*220}px,${100+Math.cos(t*.3)*160}px)`;
+  $('bl2').style.transform=`translate(${-100+Math.cos(t*.35)*200}px,${1300+Math.sin(t*.45)*180}px)`;
+  $('bl3').style.transform=`translate(${300+Math.sin(t*.25+2)*300}px,${800+Math.cos(t*.2)*300}px)`;
+  $('grid').style.transform=`translateY(${(t*40)%60}px)`;
+  document.querySelectorAll('.dot').forEach(d=>{const i=+d.dataset.i;d.style.marginTop=(-((t*(20+i*3))%400))+'px';d.style.opacity=.25+.25*Math.sin(t*2+i)});
+  $('bar').style.width=(t/T*1080)+'px';
+  // cámara
+  let z=1,sx=0,sy=0;CONFIG.zooms.forEach(([t0,f])=>{if(t>=t0)z+=f*Math.exp(-(t-t0)*7)});
+  CONFIG.temblores.forEach(([t0,a])=>{if(t>=t0){const k=a*Math.exp(-(t-t0)*9);sx+=k*Math.sin(t*71);sy+=k*Math.cos(t*53)}});
+  // escena activa + barrido entre escenas
+  let cur=0;CONFIG.escenas.forEach((s,i)=>{if(t>=s.t[0])cur=i});
+  const sc=CONFIG.escenas[cur], ts=t-sc.t[0], te=sc.t[1]-t;
+  let wx=0,fl=0; if(cur>0&&ts<.22){wx=(1-eo(ts/.22))*900;fl=.35*(1-ts/.22)} if(cur<CONFIG.escenas.length-1&&te<.18){wx=-eo(1-te/.18)*900}
+  $('cam').style.transform=`translate(${sx+wx}px,${sy}px) scale(${z})`;$('flash').style.opacity=fl;
+  $('scenes').style.filter=Math.abs(wx)>40?`blur(${Math.min(14,Math.abs(wx)/60)}px)`:'none';
+  CONFIG.escenas.forEach((s,i)=>$('s'+i).style.display=i===cur?'block':'none');
+  const i=cur,a=sc.t[0];
+  if(sc.tipo==='gancho'){pop(A(i,'t'),t,a+.05,.4,.3)}
+  if(sc.tipo==='chat'){const ph=A(i,'phone');slideUp(ph,t,a,.45,500);
+    const typ=A(i,'typ');typ.style.opacity=(t>a+.4&&t<a+1.0)?1:0;typ.querySelectorAll('i').forEach((d,k)=>d.style.transform=`translateY(${Math.sin(t*14+k)*6}px)`);
+    sc.mensajes.forEach((m,k)=>slideUp(A(i,'m'+k),t,a+1.0+k*1.0,.3,40));
+    const dg=document.getElementById('danger'),r=A(i,'ring');
+    if(dg){const on=t>a+2.6;dg.style.background=on?'#ffe1e2':'transparent';dg.style.color=on?'#c4242a':'#1b1840';
+      const pr=ph.getBoundingClientRect(),dr=dg.getBoundingClientRect(),zz=z;
+      r.style.left=(dg.offsetLeft+dg.offsetParent.offsetLeft-22)+'px';r.style.top=(dg.offsetTop+dg.offsetParent.offsetTop-14)+'px';r.style.width=(dg.offsetWidth+44)+'px';r.style.height=(dg.offsetHeight+28)+'px';
+      r.style.opacity=on?1:0;r.style.transform=`scale(${on?1.6-.6*eo((t-a-2.6)/.3):1})`}}
+  if(sc.tipo==='revelacion'){pop(A(i,'t'),t,a+.05,.45,.2)}
+  if(sc.tipo==='consecuencia'){slideUp(A(i,'t'),t,a,.35,-80);sc.chats.forEach((c,k)=>{pop(A(i,'c'+k),t,a+.6+k*1.0,.3,.7);slam(A(i,'st'+k),t,a+1.0+k*1.0)})}
+  if(sc.tipo==='pasos'){slideUp(A(i,'t'),t,a,.35,-80);sc.pasos.forEach((p,k)=>{const e=A(i,'p'+k),t0=a+.5+k*2.1,pp=back((t-t0)/.4);e.style.opacity=t<t0?0:1;e.style.transform=`translateX(${(1-pp)*1100}px)`})}
+  if(sc.tipo==='cierre'){pop(A(i,'lg'),t,a+.05,.5,.3);pop(A(i,'t'),t,a+.5,.4,.5);slideUp(A(i,'l'),t,a+1.0);slideUp(A(i,'f'),t,a+1.5)}
+  // robot
+  const [rx,ry,rw,rr]=ROBOT[sc.tipo];const ent=back((t-a)/.45);
+  const bob=Math.sin(t*3.2)*14, sway=Math.sin(t*2.1)*4;
+  const sq=1+.08*Math.sin(t*6.4)*(sc.tipo==='gancho'?1:.4);
+  $('robot').style.width=rw+'px';
+  $('robot').style.transform=`translate(${rx}px,${ry+bob+(1-ent)*600}px) rotate(${rr+sway}deg) scale(${sq},${2-sq})`;
+  // cartel del robot
+  const say=$('say');if(sc.robot){say.textContent=sc.robot;const [qx,qy]=SAYPOS[sc.tipo];say.style.left=qx+'px';say.style.top=qy+'px';say.style.opacity=t<a+.35?0:1;say.style.transform=`scale(${elastic((t-a-.35)/.6)}) rotate(${Math.sin(t*3)*2}deg)`}else say.style.opacity=0;
+  // subtítulos palabra por palabra
+  const capEl=$('cap');let found=-1;CONFIG.subtitulos.forEach((c,k)=>{if(t>=c[0]&&t<c[1])found=k});
+  if(sc.tipo==='cierre'||found<0){capEl.style.opacity=0}else{const c=CONFIG.subtitulos[found];if(found!==capIdx){capEl.innerHTML=capHTML(c[2]);capIdx=found}
+    capEl.style.opacity=1;const ws=capEl.querySelectorAll('span'),n=ws.length,span=Math.min(c[1]-c[0],n*.28+.3);
+    ws.forEach((w,k)=>{const t0=c[0]+k*(span-.3)/Math.max(1,n);const p=back((t-t0)/.22);w.style.opacity=t<t0?0:1;w.style.transform=`translateY(${(1-p)*30}px) scale(${.7+.3*p})`})}
+  $('logo').style.opacity=sc.tipo==='cierre'?0:1;
+}
+window.render=render;window.CONFIG=CONFIG;render(0);
+</script></body></html>
